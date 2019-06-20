@@ -3,9 +3,13 @@ import App from '../App';
 
 class Customer extends React.Component {
     render() {
-        <div>
-            <h2>金亨辰</h2>
-        </div>
+        return (
+             <div>
+                  <img src={this.props.image} alt="prfile"/>            
+                  <h2>{this.props.name}</h2>
+            </div>
+        )
+        
     }
 }
 
