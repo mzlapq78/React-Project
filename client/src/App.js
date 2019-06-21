@@ -9,6 +9,8 @@ import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
 import { async } from 'rxjs/internal/scheduler/async';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 
 const styles = theme => ({
   root: {
@@ -18,26 +20,29 @@ const styles = theme => ({
   },
   table: {
     minWidth: 1080
+  },
+  progress: {
+    margin: theme.spacing.unit *2
   }
-})
-
-const customer ={
-  'id': '1',
-  'image': 'https://placeimg.com/64/64/any',
-  'name': '金亨辰'
-}
+});
 
 
 
 class App extends Component {
 
   state = {
-    customers: ""
+    customer:"",
+    customers: "",
+    completed: 0
   }
 
   componentDidMount() {
+    this.timer = setInterval(this.progress, 20);
     this.callApi()
      .then(res => this.setState({customers: res}))
+     .catch(err => console.log(err));
+    this.callApi2()
+     .then(res => this.setState({customer: res}))
      .catch(err => console.log(err));
   }
 
@@ -46,6 +51,17 @@ class App extends Component {
     const body = await response.json();
     return body;
   }
+  callApi2 = async () => {
+    const response = await fetch('/api/customer');
+    const body = await response.json();
+    return body;
+  }
+
+  progress = () => {
+    const { completed } = this.state;
+    this.setState({ completed: completed >= 100 ? 0 : completed + 1});
+  }
+
   render() {
     const { classes } = this.props;
     return (
@@ -53,13 +69,19 @@ class App extends Component {
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
-              <TableCell><img src={customer.image} alt="profile"/>{customer.name}</TableCell>
+              <TableCell><img src={this.state.customer ? this.state.customer.image :""} alt="profile"/>{this.state.customer ? this.state.customer.name: ""}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
           {this.state.customers ? this.state.customers.map(c => { 
             return ( <Customer key={c.id} name={c.name} image={c.image}/>);
-          }): ""}
+          }):
+          <TableRow>
+            <TableCell colSpan="1" align = "center">
+              <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed}/> 
+            </TableCell>
+          </TableRow>
+          }
           </TableBody>
         </Table>
       </Paper>
