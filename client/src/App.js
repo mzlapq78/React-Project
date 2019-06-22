@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Customer from './components/Customer';
+import CustomerAdd from './components/CustomerAdd';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
@@ -8,8 +9,8 @@ import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import { withStyles } from '@material-ui/core/styles';
-import { async } from 'rxjs/internal/scheduler/async';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { async } from 'rxjs/internal/scheduler/async';
 
 
 const styles = theme => ({
@@ -30,10 +31,23 @@ const styles = theme => ({
 
 class App extends Component {
 
-  state = {
-    customer:"",
-    customers: "",
-    completed: 0
+  constructor(props) {
+    super(props);
+    this.state = {
+      customers:"",
+      completed: 0,
+      user:""
+    }
+  }
+
+  stateRefresh = () => {
+    this.setState({
+      customers:"",
+      completed: 0,
+    });
+    this.callApi()
+     .then(res => this.setState({customers: res}))
+     .catch(err => console.log(err));
   }
 
   componentDidMount() {
@@ -42,7 +56,7 @@ class App extends Component {
      .then(res => this.setState({customers: res}))
      .catch(err => console.log(err));
     this.callApi2()
-     .then(res => this.setState({customer: res}))
+     .then(res => this.setState({user: res}))
      .catch(err => console.log(err));
   }
 
@@ -52,7 +66,7 @@ class App extends Component {
     return body;
   }
   callApi2 = async () => {
-    const response = await fetch('/api/customer');
+    const response = await fetch('/api/user');
     const body = await response.json();
     return body;
   }
@@ -65,26 +79,39 @@ class App extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Paper className={classes.root}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell><img src={this.state.customer ? this.state.customer.image :""} alt="profile"/>{this.state.customer ? this.state.customer.name: ""}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-          {this.state.customers ? this.state.customers.map(c => { 
-            return ( <Customer key={c.id} name={c.name} image={c.image}/>);
-          }):
-          <TableRow>
-            <TableCell colSpan="1" align = "center">
-              <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed}/> 
-            </TableCell>
-          </TableRow>
-          }
-          </TableBody>
-        </Table>
-      </Paper>
+      <div>
+       <Paper className={classes.root}>
+         <Table className={classes.table}>
+           <TableHead>
+             <TableRow>
+                {this.state.user ? this.state.user.map(c => { 
+                return ( <Customer key={c.id} name={c.name} image={c.image}/>);
+                }):
+                <TableRow>
+                  <TableCell colSpan="1" align = "lightSide">
+                    <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed}/> 
+                  </TableCell>
+                </TableRow>
+                }
+             </TableRow>
+           </TableHead>
+           <TableBody>
+             <TableRow>
+               {this.state.customers ? this.state.customers.map(c => { 
+               return ( <Customer key={c.id} name={c.name} image={c.image}/>);
+               }):
+                 <TableRow>
+                  <TableCell colSpan="1" align = "lightSide">
+                     <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed}/> 
+                  </TableCell>
+                </TableRow>
+              }
+             </TableRow>
+           </TableBody>
+         </Table>
+       </Paper>
+       <CustomerAdd stateRefresh={this.stateRefresh}/>     
+      </div>
     );
   }
 }

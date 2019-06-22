@@ -1,5 +1,4 @@
 import React from 'react';
-import App from '../App';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 
